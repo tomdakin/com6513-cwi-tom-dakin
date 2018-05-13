@@ -44,12 +44,14 @@ def sample_errors(test_set, predictions, sample_size=20):
             elif predictions[i] == "1":
                 true_pos.append(words[i])
 
+    # sample from the confusion matrix
     false_neg_sample = random.sample(false_neg, 20)
     false_pos_sample = random.sample(false_pos, 20)
     true_neg_sample = random.sample(true_neg, 20)
     true_pos_sample = random.sample(true_pos, 20)
 
 
+    # Report the samples for analysis
     print ("\n--- Sample from {} False Negative Results ---".format(len(false_neg)))
     for instance in false_neg_sample:
         print (instance)

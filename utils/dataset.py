@@ -32,7 +32,7 @@ class Dataset(object):
                           'nonnative_annots', 'native_complex', 'nonnative_complex', 'gold_label', 'gold_prob']
             reader = csv.DictReader(file, fieldnames=fieldnames, delimiter='\t')
 
-            dataset = [sent for sent in reader][:500]
+            dataset = [sent for sent in reader][:100]
 
         ## Create spacy doc for each sentence and target word
         i = 0 # counter for progress bar

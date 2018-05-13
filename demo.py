@@ -1,16 +1,18 @@
 from utils.evaluation import report_score, sample_errors
 from utils.dataset import Dataset
+from utils.cross_validation import spanish_cross_validation, english_cross_validation
 from model import English_Model, Spanish_Model
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
 from sklearn.linear_model import LogisticRegression
+import sys
 import numpy as np
 
-def execute_demo(language, model, classifier):
+### DEFINE FUNCTION TO EXECUTE TRAIN AND TEST ON THE DATASET ###################
+def execute_demo(language, model, classifier, error_sampling=False):
     cwi_model = model(language, classifier)
 
     if language == "english":
-        dataset = Dataset("english") #switch these out later
+        dataset = Dataset("english")
     else: #spanish
         dataset = Dataset("spanish")
 
@@ -21,6 +23,7 @@ def execute_demo(language, model, classifier):
                                                       len(dataset.testset)))
 
     cwi_model.train(dataset.trainset)
+
 
     #dev set eval
     devset_gold_labels = [instance['gold_label'] for instance in dataset.devset]
@@ -43,83 +46,40 @@ def execute_demo(language, model, classifier):
     report_score(trainset_gold_labels, trainset_preds)
 
     ## ERROR SAMPLING ##
-    #     sample_errors(dataset.devset, predictions)
-    #     sample_errors(dataset.testset, predictions)
+    if error_sampling == True:
+        sample_errors(dataset.devset, predictions)
+        sample_errors(dataset.testset, predictions)
 
-
-    print ("*************************************************")
-
-
-
-### RUN THE MODEL
-def english_cross_validation():
-    # Number of trees in random forest
-    n_estimators = [10, 25, 50, 75, 100, 125, 150, 175, 200, 250, 300, 500]
-    max_features = ['auto', "sqrt"]
-    max_depth = [None, 10, 15, 20, 25, 30]
-    min_samples_split = [2, 4, 6, 8]
-    min_samples_leaf = [1,2,3,4]
-    bootstrap = [True, False]
-
-    ## delete the line below
-    # n_estimators = [10]
-    # max_features = ['auto']
-    # max_depth = [None]
-    # min_samples_split = [2]
-    # min_samples_leaf = [1]
-    # bootstrap = [True]
-
-    # Create the random grid
-    param_grid = {'n_estimators': n_estimators,
-                   'max_features': max_features,
-                   'max_depth': max_depth,
-                   'min_samples_split': min_samples_split,
-                   'min_samples_leaf': min_samples_leaf,
-                   'bootstrap': bootstrap}
-
-    rf = RandomForestClassifier(random_state=0)
-    rf_random = RandomizedSearchCV(estimator = rf,
-                                   param_distributions = param_grid,
-                                   n_iter = 1,
-                                   cv = 5,
-                                   verbose=4,
-                                   random_state=0,
-                                   n_jobs = -1,
-                                   scoring = "f1_macro")
-
-    execute_demo("english", English_Model, rf_random)
-
-    print ("best parameters:")
-    print (rf_random.cv_results_['params'][rf_random.best_index_])
-
-
-def spanish_cross_validation():
-    # Number of trees in random forest
-    penalty = ["l1", "l2"]
-    C = np.linspace(0.01, 1, num=100).tolist()
-
-    # Create the random grid
-    param_grid = {'penalty': penalty,
-                   "C": C}
-
-    rf = LogisticRegression(solver="saga", n_jobs = -1, max_iter = 1000)
-    rf_random = RandomizedSearchCV(estimator = rf,
-                                   param_distributions = param_grid,
-                                   n_iter = 1,
-                                   cv = 3,
-                                   verbose=4,
-                                   random_state=0,
-                                   n_jobs = -1,
-                                   scoring = "f1_macro")
-
-    execute_demo("spanish", Spanish_Model, rf_random)
-
-    print ("best parameters:")
-    print (rf_random.cv_results_['params'][rf_random.best_index_])
-
-
+    print ("**************************************************")
+################################################################################
 
 ##### RUN PROGRAM #####
+if __name__ == '__main__':
+    args = sys.argv[1:]
 
-spanish_cross_validation()
-english_cross_validation()
+    if "cv" in args:
+        # Load the data, train and test the English model with hyperparameter ##
+        # tuning using cross-validation, report the results ####################
+        eng_cv = english_cross_validation(RandomForestClassifier(random_state=0))
+        execute_demo("english", English_Model, eng_cv)
+        print ("best parameters:")
+        print (eng_cv.cv_results_['params'][eng_cv.best_index_])
+
+        # Load the data, train and test the Spanish model with hyperparameter ##
+        # tuning using cross-validation, report the results ####################
+        esp_cv = spanish_cross_validation(LogisticRegression(solver="saga", n_jobs = -1, max_iter = 1000))
+        execute_demo("spanish", Spanish_Model, esp_cv)
+        print ("best parameters:")
+        print (esp_cv.cv_results_['params'][esp_cv.best_index_])
+
+    else:
+        # Load the data, train and test the English model, report the results
+        rf = RandomForestClassifier(random_state=0, n_estimators=75,
+                                    min_samples_split=8, min_samples_leaf=1,
+                                    max_features="sqrt", max_depth=None,
+                                    bootstrap=False)
+        execute_demo('english', English_Model, rf)
+
+        # Load the data, train and test the Spanish model, report the results
+        lr = LogisticRegression(penalty="l2", C=1)
+        execute_demo('spanish', Spanish_Model, lr)
