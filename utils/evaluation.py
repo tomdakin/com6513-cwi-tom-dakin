@@ -1,4 +1,7 @@
 import sklearn
+import numpy as np
+import random
+
 # report_score code provided by Fernando Manchego
 def report_score(gold_labels, predicted_labels, detailed=True):
     macro_F1 = sklearn.metrics.f1_score(gold_labels, predicted_labels, average='macro')
@@ -10,9 +13,6 @@ def report_score(gold_labels, predicted_labels, detailed=True):
         print("{:^10}{:^10.2f}{:^10.2f}{:^10.2f}{:^10}".format(0, scores[0][0], scores[1][0], scores[2][0], scores[3][0]))
         print("{:^10}{:^10.2f}{:^10.2f}{:^10.2f}{:^10}".format(1, scores[0][1], scores[1][1], scores[2][1], scores[3][1]))
     print()
-
-import numpy as np
-import random
 
 
 ## DEFINE A FUNCTION TO RANDOMLY SAMPLE FROM CONFUSION MATRIX FOR ERROR ANALYSIS
