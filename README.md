@@ -1,8 +1,11 @@
 # com6513-cwi-tom-dakin
 ### Complex Word Identification in English and Spanish
 
-A classifier to identify complex words in the **CWI Shared Task 2018** https://sites.google.com/view/cwisharedtask2018/home . The main datasets are included in ./datasets
-A frequency index for Spanish words is included here. This is derived from the work of Matthias Buchmeier - https://en.wiktionary.org/wiki/User:Matthias_Buchmeier .
+A classifier to identify complex words in the **CWI Shared Task 2018** https://sites.google.com/view/cwisharedtask2018/home. 
+
+The main datasets are included in ./datasets
+
+A frequency index for Spanish words is included in this implementation. This index was derived from the work of Matthias Buchmeier - https://en.wiktionary.org/wiki/User:Matthias_Buchmeier .
 
 #### Dependencies
 * sci-kit learn
